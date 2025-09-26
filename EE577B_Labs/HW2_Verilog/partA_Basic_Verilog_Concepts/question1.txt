@@ -1,0 +1,31 @@
+Question 1 Answers
+~ Shaurya Chandra
+---------------------
+
+1) Reduction Operators for A = 4'b1101:
+(a) &A   = 1'b0
+(b) ~&A  = 1'b1
+(c) |A   = 1'b1
+(d) ~|A  = 1'b0
+(e) ^A   = 1'b1
+(f) ~^A  = 1'b0
+
+2) data1 = 4'b11x1, data2 = 4'bx101:
+(a) data1 === data2 : 1'b0
+(b) data1 == data2  : 1'bx
+
+3) A = 4'b1010, B = 4'b1x10:
+(a) A | B         = 4'b1x10
+(b) A + B         = 4'bxx00
+(c) A > B         = 1'bx
+(d) {{2{A}}, B}   = 12'b101010101x10
+(e) A && B        = 1'bx
+(f) A || B        = 1'b1
+
+4) Constant legality and binary value:
+(a) 4'x11       : Illegal
+(b) 'h3C        : Legal, 32'b00000000000000000000000000111100
+(c) 12'HABC     : Legal, 12'b101010111100
+(d) 4'b111011   : Legal, 4'b1011 (truncated)
+(e) 4'b11??     : Legal, 4'b11xx
+(f) 8'b1100_1001 : Legal, 8'b11001001

@@ -1,0 +1,14 @@
+# Editor/OS specific files
+.DS_Store
+.vscode/
+*.swp
+
+# Other temporary or configuration files
+*.bak
+*.tmp
+
+# Simulation and Synthesis Outputs
+*.log
+*.vcd
+*.bin
+*.out
