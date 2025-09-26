@@ -1,4 +1,4 @@
-# Makefile for Part C (Icarus Verilog)
+# Makefile
 # Usage:
 #   make sim     # compile and run
 #   make waves   # open GTKWave (if installed)
@@ -18,7 +18,7 @@ waves: sim
 	gtkwave tb.vcd &
 
 clean:
-	rm -f tb.vvp tb.vcd delay.out dff_*.out
+	rm -f tb.vvp tb.vcd *.out
 
 setup:
 	mkdir -p src tb
