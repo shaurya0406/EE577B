@@ -70,7 +70,6 @@ module tb_shift_reg;
       exp_idx_val = exp_q[idx];
       match_ok    = (q === exp_idx_val);
 
-      // no need for #0 now that we’re a cycle later
       $display(" %5t   %b   %b    %b     %b    %b   %b  0x%02h | 0x%02h  0x%02h  %s",
                $time, clk, rst, load, shift, dir, ser_in, data,
                q, exp_idx_val, match_ok ? "OK" : "MISMATCH");
