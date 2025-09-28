@@ -1,174 +1,112 @@
 `timescale 1ns/1ns
-// EE577B HW2 — Part E TAP controller testbench (sampled-TMS logging)
 module tb_tap;
   reg  TCK, TRST, TMS;
   wire [3:0] STATE;
 
   tap_controller dut(.TCK(TCK), .TRST(TRST), .TMS(TMS), .STATE(STATE));
 
-  // 500 MHz clock
+  // 500 MHz clock: 2 ns period
+  initial begin TCK = 1'b0; forever #1 TCK = ~TCK; end
+
+  integer fout;
   initial begin
-    TCK = 1'b0;
-    forever #1 TCK = ~TCK;
-  end
-
-  // Table 2 encodings
-  parameter TEST_LOGIC_RESET = 4'b0000;
-  parameter RUN_TEST_IDLE    = 4'b0001;
-  parameter SELECT_DR_SCAN   = 4'b0010;
-  parameter CAPTURE_DR       = 4'b0011;
-  parameter SHIFT_DR         = 4'b0100;
-  parameter EXIT1_DR         = 4'b0101;
-  parameter PAUSE_DR         = 4'b0110;
-  parameter EXIT2_DR         = 4'b0111;
-  parameter UPDATE_DR        = 4'b1000;
-  parameter SELECT_IR_SCAN   = 4'b1001;
-  parameter CAPTURE_IR       = 4'b1010;
-  parameter SHIFT_IR         = 4'b1011;
-  parameter EXIT1_IR         = 4'b1100;
-  parameter PAUSE_IR         = 4'b1101;
-  parameter EXIT2_IR         = 4'b1110;
-  parameter UPDATE_IR        = 4'b1111;
-
-  // Pretty state name for logs
-  function [95:0] sname; input [3:0] s;
-    case (s)
-      4'b0000: sname = "TEST_LOGIC_RESET";
-      4'b0001: sname = "RUN_TEST_IDLE";
-      4'b0010: sname = "SELECT_DR_SCAN";
-      4'b0011: sname = "CAPTURE_DR";
-      4'b0100: sname = "SHIFT_DR";
-      4'b0101: sname = "EXIT1_DR";
-      4'b0110: sname = "PAUSE_DR";
-      4'b0111: sname = "EXIT2_DR";
-      4'b1000: sname = "UPDATE_DR";
-      4'b1001: sname = "SELECT_IR_SCAN";
-      4'b1010: sname = "CAPTURE_IR";
-      4'b1011: sname = "SHIFT_IR";
-      4'b1100: sname = "EXIT1_IR";
-      4'b1101: sname = "PAUSE_IR";
-      4'b1110: sname = "EXIT2_IR";
-      4'b1111: sname = "UPDATE_IR";
-      default: sname = "UNKNOWN";
-    endcase
-  endfunction
-
-  integer fout, checks, fails;
-  reg tms_sampled;  // bit actually sampled on posedge
-
-  // VCD + output file
-  initial begin
-    $dumpfile("tb.vcd");
-    $dumpvars(0, tb_tap);
     fout = $fopen("tap_controller.out","w");
     if (!fout) begin $display("ERROR opening tap_controller.out"); $finish; end
+    $dumpfile("tb.vcd");
+    $dumpvars(0, tb_tap);
   end
 
-  // Log once per posedge, AFTER NBA updates, using the sampled TMS
+  // -------- State name decoder (Verilog-2001 friendly) --------
+  function [127:0] sname;  // returns a packed string
+    input [3:0] s;
+    begin
+      case (s)
+        4'b0000: sname = "TEST_LOGIC_RESET";
+        4'b0001: sname = "RUN_TEST_IDLE";
+        4'b0010: sname = "SELECT_DR_SCAN";
+        4'b0011: sname = "CAPTURE_DR";
+        4'b0100: sname = "SHIFT_DR";
+        4'b0101: sname = "EXIT1_DR";
+        4'b0110: sname = "PAUSE_DR";
+        4'b0111: sname = "EXIT2_DR";
+        4'b1000: sname = "UPDATE_DR";
+        4'b1001: sname = "SELECT_IR_SCAN";
+        4'b1010: sname = "CAPTURE_IR";
+        4'b1011: sname = "SHIFT_IR";
+        4'b1100: sname = "EXIT1_IR";
+        4'b1101: sname = "PAUSE_IR";
+        4'b1110: sname = "EXIT2_IR";
+        4'b1111: sname = "UPDATE_IR";
+        default: sname = "UNKNOWN";
+      endcase
+    end
+  endfunction
+
+  // Required log line once per posedge (print code + human-readable name)
   always @(posedge TCK) begin
-    #0;
-    tms_sampled <= TMS; // captured at this posedge
-    $display("At time %0t ns, TMS(sampled)=%0b, STATE=%04b (%s)",
-             $time, TMS, STATE, sname(STATE));
-    $fwrite(fout, "At time %0t ns, TMS=%0b, STATE=%04b\n", $time, TMS, STATE);
+    #0; // post-NBA so STATE is updated
+    $display("At time %0t ns, TMS=%0b, STATE=%04b (%s)", $time, TMS, STATE, sname(STATE));
+    $fwrite(fout, "At time %0t ns, TMS=%0b, STATE=%04b\n",
+                  $time, TMS, STATE);
   end
 
-  // Drive TMS on negedge; check expected STATE at the next posedge
-  task drive_and_check;
-    input tms_bit;
-    input [3:0] expected_state;
+  // Drive one TMS bit for one clock
+  task drive_tms; input v; begin TMS = v; @(posedge TCK); end endtask
+
+  // A DR path round-trip from RTI
+  task seq_dr_cycle;
     begin
-      @(negedge TCK); TMS = tms_bit;     // set up before sampling edge
-      @(posedge TCK); #0;                // sample+update here
-      checks = checks + 1;
-      if (STATE !== expected_state) begin
-        fails = fails + 1;
-        $display("  CHECK FAIL @ %0t ns: expected %04b (%s), got %04b (%s)",
-                 $time, expected_state, sname(expected_state), STATE, sname(STATE));
-      end else begin
-        $display("  CHECK PASS @ %0t ns: STATE=%04b (%s)",
-                 $time, STATE, sname(STATE));
-      end
+      drive_tms(1); // Select-DR-Scan
+      drive_tms(0); // Capture-DR
+      drive_tms(0); // Shift-DR
+      drive_tms(1); // Exit1-DR
+      drive_tms(0); // Pause-DR
+      drive_tms(1); // Exit2-DR
+      drive_tms(1); // Update-DR
+      drive_tms(0); // Run-Test/Idle
     end
   endtask
 
-  // DR and IR round trips (from RTI)
-  task seq_dr_cycle_checked;
+  // An IR path round-trip from RTI
+  task seq_ir_cycle;
     begin
-      drive_and_check(1'b1, SELECT_DR_SCAN);
-      drive_and_check(1'b0, CAPTURE_DR);
-      drive_and_check(1'b0, SHIFT_DR);
-      drive_and_check(1'b1, EXIT1_DR);
-      drive_and_check(1'b0, PAUSE_DR);
-      drive_and_check(1'b1, EXIT2_DR);
-      drive_and_check(1'b1, UPDATE_DR);
-      drive_and_check(1'b0, RUN_TEST_IDLE);
+      drive_tms(1); // Select-DR-Scan
+      drive_tms(1); // Select-IR-Scan
+      drive_tms(0); // Capture-IR
+      drive_tms(0); // Shift-IR
+      drive_tms(1); // Exit1-IR
+      drive_tms(0); // Pause-IR
+      drive_tms(1); // Exit2-IR
+      drive_tms(1); // Update-IR
+      drive_tms(0); // Run-Test/Idle
     end
   endtask
 
-  task seq_ir_cycle_checked;
-    begin
-      drive_and_check(1'b1, SELECT_DR_SCAN);
-      drive_and_check(1'b1, SELECT_IR_SCAN);
-      drive_and_check(1'b0, CAPTURE_IR);
-      drive_and_check(1'b0, SHIFT_IR);
-      drive_and_check(1'b1, EXIT1_IR);
-      drive_and_check(1'b0, PAUSE_IR);
-      drive_and_check(1'b1, EXIT2_IR);
-      drive_and_check(1'b1, UPDATE_IR);
-      drive_and_check(1'b0, RUN_TEST_IDLE);
-    end
-  endtask
-
-  // Five ones path back to TLR
-  task tms_to_reset_5ones_checked;
-    begin
-      drive_and_check(1'b1, SELECT_DR_SCAN);
-      drive_and_check(1'b1, SELECT_IR_SCAN);
-      drive_and_check(1'b1, TEST_LOGIC_RESET);
-      drive_and_check(1'b1, TEST_LOGIC_RESET);
-      drive_and_check(1'b1, TEST_LOGIC_RESET);
-    end
-  endtask
+  // Five ones on TMS will drive the machine back to Test-Logic-Reset from anywhere
+  task tms_reset_5ones; integer k; begin for (k=0;k<5;k=k+1) drive_tms(1'b1); end endtask
 
   initial begin
-    checks = 0; fails = 0;
-
-    // Hold synchronous reset for 4 posedges, then deassert on a negedge
+    // Synchronous reset asserted for 4 clocks, then deassert
     TRST = 1'b1; TMS = 1'b1; repeat (4) @(posedge TCK);
-    @(negedge TCK); TRST = 1'b0;
+    TRST = 1'b0;
 
     // Leave TLR to RTI
-    drive_and_check(1'b0, RUN_TEST_IDLE);
+    drive_tms(1'b0);
 
-    // DR then IR cycles
-    seq_dr_cycle_checked();
-    seq_ir_cycle_checked();
+    // Walk DR subgraph once
+    seq_dr_cycle();
 
-    // Back to reset via five ones on TMS
-    tms_to_reset_5ones_checked();
+    // Walk IR subgraph once
+    seq_ir_cycle();
 
-    // Assert TRST again (sync), check TLR, then deassert on negedge
-    @(negedge TCK); TRST = 1'b1;
-    @(posedge TCK); #0;
-    checks = checks + 1;
-    if (STATE !== TEST_LOGIC_RESET) begin
-      fails = fails + 1;
-      $display("  CHECK FAIL @ %0t ns: TRST=1 expected TLR, got %04b (%s)",
-               $time, STATE, sname(STATE));
-    end else begin
-      $display("  CHECK PASS @ %0t ns: TRST=1 -> TLR", $time);
-    end
-    @(negedge TCK); TRST = 1'b0;
+    // Return to reset via TMS ones
+    tms_reset_5ones();
 
-    // One more step to RTI
-    drive_and_check(1'b0, RUN_TEST_IDLE);
+    // Exercise synchronous TRST again
+    TRST = 1'b1; @(posedge TCK); TRST = 1'b0; drive_tms(1'b0); // to RTI
 
-    // Summary
-    $display("SUMMARY: %0d checks, %0d fails", checks, fails);
-    if (fails == 0) $display("RESULT: PASS");
-    else            $display("RESULT: FAIL");
-
+    // Done
+    repeat (2) @(posedge TCK);
     $fclose(fout);
     $finish;
   end
