@@ -16,7 +16,7 @@ Question 1 Answers
 
 3) A = 4'b1010, B = 4'b1x10:
 (a) A | B         = 4'b1x10
-(b) A + B         = 4'bxx00
+(b) A + B         = 4'bxxxx
 (c) A > B         = 1'bx
 (d) {{2{A}}, B}   = 12'b101010101x10
 (e) A && B        = 1'bx
