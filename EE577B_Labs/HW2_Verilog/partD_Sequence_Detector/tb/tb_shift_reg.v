@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-module tb_shift_reg;
+module tb;
   reg        clk;
   reg        rst;
   reg        shift;
@@ -22,8 +22,8 @@ module tb_shift_reg;
 
   initial begin
     $dumpfile("tb.vcd");
-    $dumpvars(0, tb_shift_reg);
-    $dumpvars(0, tb_shift_reg.dut.q);
+    $dumpvars(0, tb);
+    $dumpvars(0, tb.dut.q);
   end
 
   // ---------------------- Precomputed expected sequence ----------------------
@@ -96,7 +96,7 @@ module tb_shift_reg;
 
     // 1) LOAD 0xA5 — arm checking only AFTER the load has been captured
     data=8'hA5; load=1; @(negedge clk); load=0;
-    @(posedge clk);            // this posedge updates q to A5
+    // @(posedge clk);            // this posedge updates q to A5
     checking = 1'b1;           // start comparisons from the next line onward
 
     // 2) LEFT x2 with ser_in=1 -> expect 4B, 97

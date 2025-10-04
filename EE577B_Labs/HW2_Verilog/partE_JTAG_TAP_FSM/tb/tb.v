@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-module tb_tap;
+module tb;
   reg  TCK, TRST, TMS;
   wire [3:0] STATE;
 
@@ -13,7 +13,7 @@ module tb_tap;
     fout = $fopen("tap_controller.out","w");
     if (!fout) begin $display("ERROR opening tap_controller.out"); $finish; end
     $dumpfile("tb.vcd");
-    $dumpvars(0, tb_tap);
+    $dumpvars(0, tb);
   end
 
   // -------- State name decoder (Verilog-2001 friendly) --------
@@ -94,13 +94,13 @@ module tb_tap;
     drive_tms(1'b0);
 
     // Walk DR subgraph once
-    seq_dr_cycle();
+    seq_dr_cycle;
 
     // Walk IR subgraph once
-    seq_ir_cycle();
+    seq_ir_cycle;
 
     // Return to reset via TMS ones
-    tms_reset_5ones();
+    tms_reset_5ones;
 
     // Exercise synchronous TRST again
     TRST = 1'b1; @(posedge TCK); TRST = 1'b0; drive_tms(1'b0); // to RTI

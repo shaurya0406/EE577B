@@ -1,7 +1,8 @@
 `timescale 1ns/1ns
 // Reads pattern bits from "pattern.in", 500 MHz clock, asserts RST for 4 cycles.
 // Writes "seq.out" in the required format.
-module tb_seq;
+
+module tb;
   reg CLK, RST, D_IN;
   wire MATCH;
 
@@ -16,9 +17,9 @@ module tb_seq;
   // VCD: dump entire testbench + the internal shift-register state
   initial begin
     $dumpfile("tb.vcd");
-    $dumpvars(0, tb_seq);                 // everything here
+    $dumpvars(0, tb);                 // everything here
     // Inside seq_detect, the shift register instance is dut.u_sr
-    $dumpvars(0, tb_seq.dut.u_sr.q);
+    $dumpvars(0, tb.dut.u_shift_reg.q);
   end
 
   initial begin
