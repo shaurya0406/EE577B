@@ -1,0 +1,16 @@
+ 
+****************************************
+check_design summary:
+Version:     K-2015.06-SP5-5
+Date:        Tue Oct 14 23:04:58 2025
+****************************************
+
+                   Name                                            Total
+--------------------------------------------------------------------------------
+Cells                                                               2
+    Cells do not drive (LINT-1)                                     2
+--------------------------------------------------------------------------------
+
+Warning: In design 'traffic_control', cell 'B_42' does not drive any nets. (LINT-1)
+Warning: In design 'traffic_control', cell 'C1003' does not drive any nets. (LINT-1)
+1

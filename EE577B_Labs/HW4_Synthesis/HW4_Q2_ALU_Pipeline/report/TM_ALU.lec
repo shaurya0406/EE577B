@@ -1,0 +1,57 @@
+SETUP> read library -Both -Replace  -sensitive    -Verilog /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/include/gscl45nm.v -nooptimize   
+// Command: read library -Both -Replace  -sensitive    -Verilog /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/include/gscl45nm.v -nooptimize   
+// Parsing file /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/include/gscl45nm.v ...
+// Warning: (RTL14) Signal has input but it has no output (occurrence:6)
+// Warning: (RTL14.1) Fanout load of the signal is removed (occurrence:1)
+// Warning: (DIR6.1) Ignored compiler directive is detected (occurrence:32)
+// Warning: (DIR6.2) Supported compiler directive is detected (occurrence:64)
+// Note: Read VERILOG library successfully
+SETUP> read design /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/src/TM_ALU.v -Verilog -Golden   -sensitive         -continuousassignment Bidirectional   -nokeep_unreach   -nosupply 
+// Command: read design /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/src/TM_ALU.v -Verilog -Golden   -sensitive         -continuousassignment Bidirectional   -nokeep_unreach   -nosupply 
+// Parsing file /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/src/TM_ALU.v ...
+// Golden root module is set to 'TM_ALU'
+// Warning: (RTL1.5a) Assignment with RHS bit width is greater than LHS bit width (occurrence:1)
+// Warning: (RTL6.3) X created when divisor equals to zero (occurrence:1)
+// Warning: (RTL7.10b) Ternary branches have different data sizes (occurrence:1)
+// Note: Read VERILOG design successfully
+SETUP> read design /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/netlist/TM_ALU_syn.v -Verilog -Revised   -sensitive         -continuousassignment Bidirectional   -nokeep_unreach   -nosupply 
+// Command: read design /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/netlist/TM_ALU_syn.v -Verilog -Revised   -sensitive         -continuousassignment Bidirectional   -nokeep_unreach   -nosupply 
+// Parsing file /home/viterbi/04/shauryac/ee577b/HW4/HW4_Q2_ALU_Pipeline/netlist/TM_ALU_syn.v ...
+// Revised root module is set to 'TM_ALU'
+// Warning: (RTL2.13) Undriven pin is detected (occurrence:19)
+// Warning: (RTL14) Signal has input but it has no output (occurrence:18)
+// Note: (HRC3.5b) Open output port connection is detected (occurrence:9)
+// Warning: (HRC3.10a) An input port is declared, but it is not completely used in the module (occurrence:1)
+// Warning: There are 19 undriven nets in Revised
+// Warning: There are 19 undriven pins in Revised
+// Note: Read VERILOG design successfully
+SETUP> set system mode lec
+// Command: set system mode lec
+// Processing Golden ...
+// Modeling Golden ...
+// Warning: (F34) Converted 17 X assignment(s) as don't care(s)
+// Processing Revised ...
+// Modeling Revised ...
+// (F28) Converted 19 internal output port(s) to inout port(s)
+// Mapping key points ...
+================================================================================
+Mapped points: SYSTEM class
+--------------------------------------------------------------------------------
+Mapped points     PI     PO     DFF       Total   
+--------------------------------------------------------------------------------
+Golden            26     16     98        140     
+--------------------------------------------------------------------------------
+Revised           26     16     98        140     
+================================================================================
+LEC> add compared points -all
+// Command: add compared points -all
+// 114 compared points added to compare list
+LEC> compare -NONEQ_Print
+// Command: compare -NONEQ_Print
+================================================================================
+Compared points      PO     DFF       Total   
+--------------------------------------------------------------------------------
+Equivalent           16     98        114     
+================================================================================
+
+

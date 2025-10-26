@@ -1,0 +1,11 @@
+Binary encoding:
+Critical Path: 0.46n
+Cell Area: 644.818183
+Power: 0.055019 mW
+Test: PASS
+
+One-Hot Encoding:
+Critical Path: 0.43n
+Cell Area: 788.423979
+Power: 0.054149 mW
+Test: PASS

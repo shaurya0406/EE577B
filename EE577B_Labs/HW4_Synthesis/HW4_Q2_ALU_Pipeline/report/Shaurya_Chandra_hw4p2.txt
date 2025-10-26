@@ -1,0 +1,1 @@
+FREQ: 25 MHz POWER: 0.08796 mW
