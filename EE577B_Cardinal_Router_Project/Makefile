@@ -22,3 +22,15 @@ clean:
 	$(MAKE) -C sim clean || true
 	$(MAKE) -C synth/dc clean || true
 	rm -rf results/logs/* results/vcd/* results/simv/* results/netlist/* results/synthesis/*
+
+# Root Makefile – convenience targets
+.PHONY: unit run clean
+
+TB ?= tb_vc_phase
+GL ?= 0
+
+unit:
+	$(MAKE) -C tb/unit_tb TB=$(TB) GL=$(GL) run
+
+clean-tb:
+	$(MAKE) -C tb/unit_tb clean
